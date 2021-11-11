@@ -1,38 +1,26 @@
-/* src/App.js */
-import './App.css'
-import { useState } from 'react'
-import { create } from 'ipfs-http-client'
-
-const client = create('https://ipfs.infura.io:5001/api/v0')
+import './App.css';
 
 function App() {
-  const [fileUrl, updateFileUrl] = useState(``)
-  async function onChange(e) {
-    const file = e.target.files[0]
-    try {
-      const added = await client.add(file)
-      const url = `https://ipfs.infura.io/ipfs/${added.path}`
-      updateFileUrl(url)
-
-    } catch (error) {
-      console.log('Error uploading file: ', error)
-    }  
-    console.log(fileUrl);
-  }
   return (
     <div className="App">
-      <h1>IPFS Example</h1>
-      <input
-        type="file"
-        onChange={onChange}
-      />
-      {
-        fileUrl && (
-          <img src={fileUrl} width="600px" />
-        )
-      }
+      <header className="App-header">
+      <div className="alert alert-danger" role="alert">
+      iPFS UPloader
+      </div>
+      <div>
+      <div classNameName="mb-3 ">
+  <label for="formFile" className="form-label">Upload your File From Computer</label>
+  <input className="form-control p-1 " type="file" id="formFile" onChange={_=>console.log("dsdfs")}/>
+  </div>
+      </div>
+      <div  className="mt-2">
+      <button   type="button" className="btn btn-success">Upload To IPFS</button>
+
+      </div>
+
+      </header>
     </div>
   );
 }
 
-export default App
+export default App;
