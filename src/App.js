@@ -16,9 +16,12 @@
 
     const providerChanged = (provider)=>{
       provider.on("chainChanged",_=>window.location.reload());
+      provider.on("accountChanged",_=>window.location.reload());
+
     }
 
     useEffect(() => {
+      
       const loadProvider = async()=>{
         const provider = await detectEthereumProvider();
 
@@ -48,25 +51,43 @@
       const contractFile = await fetch('/abis/Cloud.json');
       const convertFileToJson = await contractFile.json();
       const networkId = await web3Api.web3.eth.net.getId();
-      const networkData = convertFileToJson.networks[networkId];
-      
 
-      if(networkData){
-      const address = networkData.address;
+      const netWorkData = convertFileToJson.networks[networkId];
+
+      if(netWorkData){
+
       const abi = convertFileToJson.abi;
-      const contract = await new web3Api.web3.eth.Contract(abi,address);
 
-      setWeb3Api({
-        contract:contract
-      })
-      }else {
-        window.alert("Connect with Ganach Network")
+      const address = convertFileToJson.networks[networkId].address;
+      const contract = await new web3Api.web3.eth.Contract(abi,address)
+
+          setWeb3Api({
+          contract: contract
+          })
+      } else {
+
+        window.alert("Our App connect with GANACHE Network Only")
       }
 
-  
+
+
     }
     web3Api.web3 && loadContract();
   },[web3Api.web3])
+
+  //Create The setter and Getter My Account Address
+  const[account,setAccount]=useState(null);
+
+  useEffect(() => {
+    const getAccount= async()=>{
+      const accounts= await web3Api.web3.eth.getAccounts();
+      setAccount(accounts[0]);
+      console.log(accounts[0]);
+
+    }
+    web3Api.web3 && getAccount()
+   
+  }, [web3Api.web3])
 
 
     const [urlFile,setUrlFile] = useState('')
@@ -97,6 +118,7 @@
         <div>
         <div classNameName="mb-3 ">
           <label for="formFile" className="form-label">Upload your File From Computer </label>
+          <p>My Account Is : {account}</p>
           <input className="form-control p-1 " type="file" id="formFile" onChange={onChange} />
           </div>
         </div>
