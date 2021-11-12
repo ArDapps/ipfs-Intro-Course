@@ -1,10 +1,74 @@
   import './App.css';
   import {create} from "ipfs-http-client";
-  import { useState } from 'react';
+  import { useState ,useEffect} from 'react';
+  import detectEthereumProvider from '@metamask/detect-provider';
+  import Web3 from "web3"
 
   const ipfsClient = create("https://ipfs.infura.io:5001/api/v0");
 
   function App() {
+    //Create web3 Object use Effect
+    const[web3Api,setWeb3Api] = useState({
+      provider:null,
+      web3:null,
+      contract:null
+    })
+
+    const providerChanged = (provider)=>{
+      provider.on("chainChanged",_=>window.location.reload());
+    }
+
+    useEffect(() => {
+      const loadProvider = async()=>{
+        const provider = await detectEthereumProvider();
+
+
+        if(provider){
+          providerChanged(provider);
+          setWeb3Api({
+            provider,
+            web3:new Web3(provider)
+          })
+
+
+        }else{
+          console.log("please Dwonlaod Metamask and install it")
+        }
+
+      }
+
+    loadProvider()
+    }, [])
+  
+
+    //Connect with contract
+
+  useEffect(()=>{
+    const loadContract=  async()=>{
+      const contractFile = await fetch('/abis/Cloud.json');
+      const convertFileToJson = await contractFile.json();
+      const networkId = await web3Api.web3.eth.net.getId();
+      const networkData = convertFileToJson.networks[networkId];
+      
+
+      if(networkData){
+      const address = networkData.address;
+      const abi = convertFileToJson.abi;
+      const contract = await new web3Api.web3.eth.Contract(abi,address);
+
+      setWeb3Api({
+        contract:contract
+      })
+      }else {
+        window.alert("Connect with Ganach Network")
+      }
+
+  
+    }
+    web3Api.web3 && loadContract();
+  },[web3Api.web3])
+
+
     const [urlFile,setUrlFile] = useState('')
 
    async function onChange (e){
@@ -17,7 +81,6 @@
 
     const url = `https://ipfs.infura.io/ipfs/${addFile.path}`;
     setUrlFile(url);
-    console.log(url)
 
 
   }catch(e){
@@ -33,11 +96,11 @@
         </div>
         <div>
         <div classNameName="mb-3 ">
-    <label for="formFile" className="form-label">Upload your File From Computer</label>
-    <input className="form-control p-1 " type="file" id="formFile" onChange={onChange} />
-    </div>
+          <label for="formFile" className="form-label">Upload your File From Computer </label>
+          <input className="form-control p-1 " type="file" id="formFile" onChange={onChange} />
+          </div>
         </div>
-        <img src = {urlFile} width="300px"/>
+        <img  className="pt-2 " src = {urlFile} width="300px"/>
 
         </header>
       </div>
