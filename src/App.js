@@ -11,7 +11,6 @@ function App() {
   const[web3Api,setWeb3Api] = useState({
     provider:null,
     web3:null,
-    contract:null
   })
 
   const providerChanged = (provider)=>{
@@ -45,7 +44,7 @@ function App() {
 
 
   //Connect with contract
-
+const [contract,setContract] = useState(null);
 useEffect(()=>{
   const loadContract=  async()=>{
     const contractFile = await fetch('/abis/Cloud.json');
@@ -60,10 +59,8 @@ useEffect(()=>{
 
     const address = convertFileToJson.networks[networkId].address;
     const contract = await new web3Api.web3.eth.Contract(abi,address)
+    setContract(contract)
 
-        setWeb3Api({
-        contract: contract
-        })
     } else {
 
       window.alert("Our App connect with GANACHE Network Only")
@@ -90,6 +87,7 @@ useEffect(() => {
 }, [web3Api.web3])
 
 
+//Onchange Function save dta to ipfs
   const [urlFile,setUrlFile] = useState('')
 
  async function onChange (e){
@@ -108,6 +106,32 @@ try{
   console.log("error",e);
 }
 }
+//get and set the data at lockchain
+const [cloudData,setCloudata]= useState("");
+
+useEffect(() => {
+  const loadSavedata = async ()=>{
+
+    await contract.methods.saveData("https://mrbebo.com").send({
+      from:account
+    })
+
+    const responseData =  await contract.methods.getData().call()
+    setCloudata(responseData);
+  }
+  if(typeof web3Api.web3 !=='undefined'&& typeof contract!=='undefined'&& contract!== null && typeof account !=='undefined'){
+    loadSavedata();
+  }
+ 
+}, [])
+
+
+
+
+
+
+
+
 
   return (
     <div className="App">
@@ -119,6 +143,7 @@ try{
       <div classNameName="mb-3 ">
         <label for="formFile" className="form-label">Upload your File From Computer </label>
         <p>My Account Is : {account}</p>
+        <p> data From Blockchain is :{cloudData}</p>
         <input className="form-control p-1 " type="file" id="formFile" onChange={onChange} />
         </div>
       </div>
