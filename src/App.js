@@ -88,7 +88,7 @@ useEffect(() => {
 
 
 //Onchange Function save dta to ipfs
-  const [urlFile,setUrlFile] = useState('')
+  const [urlFile,setUrlFile] = useState()
 
  async function onChange (e){
 
@@ -98,8 +98,9 @@ try{
 
   const addFile = await ipfsClient.add(file);
 
-  const url = `https://ipfs.infura.io/ipfs/${addFile.path}`;
-  setUrlFile(url);
+  // const url = `https://ipfs.infura.io/ipfs/${addFile.path}`;
+  const hash = addFile.path
+  setUrlFile(hash);
 
 
 }catch(e){
@@ -110,20 +111,29 @@ try{
 const [cloudData,setCloudata]= useState("");
 
 useEffect(() => {
-  const loadSavedata = async ()=>{
-
-    await contract.methods.saveData("https://mrbebo.com").send({
-      from:account
-    })
+  const loadData = async ()=>{
 
     const responseData =  await contract.methods.getData().call()
     setCloudata(responseData);
   }
   if(typeof web3Api.web3 !=='undefined'&& typeof contract!=='undefined'&& contract!== null && typeof account !=='undefined'){
-    loadSavedata();
+    loadData();
   }
  
-}, [])
+})
+
+useEffect(() => {
+  const savedata = async()=>{
+    await contract.methods.saveData(urlFile).send({
+      from:account
+    })
+    window.location.reload()
+
+
+  }
+  if(typeof web3Api.web3 !=='undefined'&& typeof contract!=='undefined'&& contract!== null && typeof account !=='undefined'){
+    savedata();
+  }}, [urlFile])
 
 
 
@@ -143,11 +153,17 @@ useEffect(() => {
       <div classNameName="mb-3 ">
         <label for="formFile" className="form-label">Upload your File From Computer </label>
         <p>My Account Is : {account}</p>
-        <p> data From Blockchain is :{cloudData}</p>
+        <p> Hash From Blockchain is :{cloudData}</p>
+
+        {
+          urlFile ? <p> data From IPFS Url File Select is :{`https://ipfs.infura.io/ipfs/${urlFile}`}</p> :<p> Select image to See the path</p>
+        }
+        
+
         <input className="form-control p-1 " type="file" id="formFile" onChange={onChange} />
         </div>
       </div>
-      <img  className="pt-2 " src = {urlFile} width="300px"/>
+      <img  className="pt-2 " src = {`https://ipfs.infura.io/ipfs/${cloudData}`} width="300px"/>
 
       </header>
     </div>
